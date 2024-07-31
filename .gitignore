@@ -5,3 +5,5 @@ graphs/
 *.parquet
 *.gml
 *.html
+ 
+__pycache__/
