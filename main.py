@@ -1,11 +1,15 @@
 import logging
 import os
 from datetime import datetime
+
 from src.data_processing.generate_graph import load_data, create_graph
 from src.algorithms.astar import astar
 from src.algorithms.utils import calculate_imbalance, update_graph, load_graph
 from src.visualization.visualize import visualize_path
 from src.constants import MAX_TOUR_DURATION
+from src.algorithms.choose_start_station import choose_start_station
+from src.algorithms.choose_end_station import choose_end_station
+from src.algorithms.calculate_bikes_to_move import calculate_bikes_to_move
 
 def main():
     # Create a logs directory if it doesn't exist
@@ -26,39 +30,40 @@ def main():
 
     # Main loop
     max_iterations = 10
-    threshold = 5
 
     for i in range(max_iterations):
         logging.info(f"Start iteration {i+1}")
         # Calculate the imbalance of each station
         imbalances = {station_id: calculate_imbalance(data['capacity'], data['velos']) for station_id, data in G.nodes(data=True)}
+    
+        # Choose the start station
+        start_station_id, start_imbalance = choose_start_station(imbalances)
 
-        # Find the most imbalanced station
-        start_station_id = max(imbalances, key=lambda x: abs(imbalances[x]))
+        if start_station_id is not None:
+            # Choose the end station
+            end_station_id, end_imbalance = choose_end_station(G, start_station_id, imbalances)
 
-        # Find neighboring stations that can contribute to rebalancing the start station
-        neighbors = [station_id for station_id in G.neighbors(start_station_id) if abs(imbalances[station_id]) < threshold]
+            if end_station_id is not None:
+                # Find the optimal path between the start station and the end station
+                path = astar(G, start_station_id, end_station_id, MAX_TOUR_DURATION)
 
-        if neighbors:
-            # Choose the closest neighboring station
-            end_station_id = min(neighbors, key=lambda x: G[start_station_id][x]['weight'])
+                if path:
+                    # Calculate the number of bikes to move
+                    num_bikes_moved = calculate_bikes_to_move(start_imbalance, end_imbalance)
 
-            # Find the optimal path between the start station and the end station
-            path = astar(G, start_station_id, end_station_id, MAX_TOUR_DURATION)
+                    # Update the graph with the number of bikes moved
+                    update_graph(G, start_station_id, end_station_id, num_bikes_moved)
 
-            if path:
-                # Move bikes along the optimal path
-                num_bikes_moved = min(imbalances[start_station_id], -imbalances[end_station_id])
-                update_graph(G, start_station_id, end_station_id, num_bikes_moved)
-
-                # Log the path and the update
-                logging.info(f"Iteration {i+1}: Optimal path found:")
-                logging.info(f"Path: {' -> '.join(map(str, path))}")
-                logging.info(f"Moved {num_bikes_moved} bikes from station {start_station_id} to station {end_station_id}")
+                    # Log the path and the update
+                    logging.info(f"Iteration {i+1}: Optimal path found:")
+                    logging.info(f"Path: {' -> '.join(map(str, path))}")
+                    logging.info(f"Moved {num_bikes_moved} bikes from station {start_station_id} to station {end_station_id}")
+                else:
+                    logging.info(f"Iteration {i+1}: No path found.")
             else:
-                logging.info(f"Iteration {i+1}: No path found.")
+                logging.info(f"Iteration {i+1}: No suitable end station found.")
         else:
-            logging.info(f"Iteration {i+1}: No suitable neighboring station found.")
+            logging.info(f"Iteration {i+1}: No suitable start station found.")
 
 if __name__ == "__main__":
     main()
