@@ -1,2 +1,4 @@
 venv/
 *.ipynb
+graphs/ 
+#because too large to upload to github
