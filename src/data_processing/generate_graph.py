@@ -19,7 +19,7 @@ def create_graph(df):
         station_capacity = row['Capacité de la station']
         station_coords = tuple(map(float, row['Coordonnées géographiques'].split(',')))
         
-        # Générer une configuration initiale aléatoire pour chaque station
+        # Generate a random initial configuration for each station
         num_velos = random.randint(0, station_capacity)
         num_bornes = station_capacity - num_velos
         
