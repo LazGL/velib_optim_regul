@@ -68,5 +68,6 @@ def astar(graph, start_station_id, end_station_id, max_duration, max_nodes=20000
         logging.info(f"Optimal path found: {' -> '.join(map(str, path))}")
         return path
     else:
+        print(f"ERROR : No path found from {start_station_id} to {end_station_id}")
         logging.info(f"No path found from {start_station_id} to {end_station_id}")
         return None

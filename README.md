@@ -3,6 +3,8 @@
 ## Project Objective
 The objective of this project is to find best possible path to regulate the velib network.
 
+
+
 ## Data
 The data used in this project is the Velib data from Paris. The data is available in the `data/` directory.
 
