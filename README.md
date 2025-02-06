@@ -1,4 +1,4 @@
-# Project README
+# Optimize shared bike regulation with Monte Carlo Tree Search
 
 ## Project Objective
 The objective of this project is to find best possible path to regulate the velib network.
